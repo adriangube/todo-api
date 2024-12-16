@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "todo-api"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["adriangube <adriangubedev@gmail.com>"]
@@ -13,3 +13,7 @@ fastapi = {extras = ["standard"], version = "^0.115.6"}
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dev = "src.todo_api.main:start"
+prod = "src.todo_api.main:start"
