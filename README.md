@@ -50,10 +50,19 @@ This will create a virtual environment and install the necessary dependencies li
 ### **4. Run the Application**
 To run the FastAPI app with Uvicorn, use the following command:
 ```bash
-poetry run uvicorn todo-fastapi.main:app --reload
+poetry run dev
 ```
 
 This will start the development server on `http://127.0.0.1:8000`. You can view the API documentation at `http://127.0.0.1:8000/docs`.
+
+
+### **4.1 Run the application as production (without reload)**
+To run the FastAPI app with Uvicorn, use the following command:
+```bash
+poetry run prod
+```
+
+This will start the production server on `http://127.0.0.1:8000`. You can view the API documentation at `http://127.0.0.1:8000/docs`.
 
 ### **5. Running Tests**
 To run the tests with **pytest**, use this command:
