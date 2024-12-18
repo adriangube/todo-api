@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr, Field
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from sqlalchemy.orm import Session, load_only
 from starlette import status
 
@@ -10,6 +10,7 @@ from .auth import (
     raise_if_no_valid_token,
     decode_access_token,
     hash_password,
+    verify_password,
 )
 
 from ..database import get_db_session
@@ -33,6 +34,16 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: str
+
+class UserVerification(BaseModel):
+    password: str = Field(min_length=10)
+    new_password: str = Field(min_length=10)
+
+    @model_validator(mode='after')
+    def check_passwords(self):
+        if self.password == self.new_password:
+            raise ValueError('The new_password must be different from the current password.')
+        return self
 
 
 def getUserSelectableFields():
@@ -64,3 +75,20 @@ async def create_user(db: db_session, create_user_request: CreateUserRequest):
 
     db.add(new_user)
     db.commit()
+
+@router.put('/password', status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    decoded_token: decoded_access_token,
+    db: db_session,
+    user_verification: UserVerification
+):
+    raise_if_no_valid_token(decoded_token)
+    user_model = db.query(Users).filter(Users.id == decoded_token.get('id')).first()
+    if not verify_password(user_verification.password, user_model.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='The password provided doesn´t match the current password.')
+    
+    user_model.hashed_password = hash_password(user_verification.new_password)
+
+    db.add(user_model)
+    db.commit()
+
