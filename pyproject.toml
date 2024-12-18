@@ -8,6 +8,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.115.6"}
+pydantic-settings = "^2.7.0"
+python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.36"
+pyjwt = "^2.10.1"
+passlib = "^1.7.4"
+email-validator = "^2.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -22,4 +28,4 @@ dev = "src.todo_api.main:start"
 prod = "src.todo_api.main:start"
 
 [tool.pylint]
-disable = ["missing-function-docstring", "missing-module-docstring"]
+disable = ["missing-function-docstring", "missing-module-docstring", "missing-class-docstring"]
