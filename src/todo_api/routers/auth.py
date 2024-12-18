@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -19,10 +19,15 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 db_session = Annotated[Session, Depends(get_db_session)]
 
 
-class Token(BaseModel):
+class TokenResponse(BaseModel):
     access_token: str
     token_type: str
 
+
+class DecodedTokenDict(TypedDict):
+    username: str
+    id: int
+    role: str
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -51,15 +56,15 @@ def create_access_token(
     username: str,
     user_id: int,
     role: str,
-    expiration_delta: timedelta = settings.access_token_expire_minutes,
+    expiration_delta: timedelta = timedelta(minutes=settings.access_token_expire_minutes),
 ):
-    encode = {"username": username, "id": user_id, "role": role}
+    encode: DecodedTokenDict = {"username": username, "id": user_id, "role": role}
     expires = datetime.now(timezone.utc) + expiration_delta
     encode.update({"exp": expires})
     return jwt.encode(encode, settings.secret_key, settings.algorithm)
 
 
-async def decode_access_token(token: Annotated[str, Depends(oauth2_bearer)]):
+async def decode_access_token(token: Annotated[str, Depends(oauth2_bearer)]) -> DecodedTokenDict:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -76,4 +81,16 @@ async def decode_access_token(token: Annotated[str, Depends(oauth2_bearer)]):
         return {"username": username, "id": user_id, "role": role}
     except InvalidTokenError:
         raise credentials_exception
+
+async def raise_if_no_valid_token(decoded_token: DecodedTokenDict):
+    if decoded_token is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
+
+@router.post('/token', response_model=TokenResponse)
+async def get_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_session):
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
+    token = create_access_token(user.username, user.id, user.role)
+    return { 'access_token': token, 'token_type': 'bearer' }
 
