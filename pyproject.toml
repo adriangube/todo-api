@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "src"
+name = "todo_api"
 version = "0.1.0"
 description = ""
 authors = ["adriangube <adriangubedev@gmail.com>"]
@@ -26,8 +26,8 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-dev = "src.todo_api.main:start"
-prod = "src.todo_api.main:start"
+dev = "todo_api.main:start"
+prod = "todo_api.main:start"
 
 [tool.pylint]
 disable = ["missing-function-docstring", "missing-module-docstring", "missing-class-docstring"]
