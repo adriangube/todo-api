@@ -40,6 +40,14 @@ async def read_all(decoded_token: decoded_access_token, db: db_session):
     return db.query(Todos).filter(Todos.user_id == decoded_token.get("id")).all()
 
 
+@router.get('/{todo_id}', status_code=status.HTTP_200_OK, response_model=TodosResponse)
+async def get_one(decoded_token: decoded_access_token, db: db_session, todo_id: int = Path(gt=0)):
+    await raise_if_no_valid_token(decoded_token)
+    todo = db.query(Todos).filter(Todos.id == todo_id, Todos.user_id == decoded_token.get('id')).first()
+    if todo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Todo not found.')
+    return todo
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_todo(
     decoded_token: decoded_access_token,
@@ -76,6 +84,6 @@ async def update_todo(
     update_fields = { key: value for key, value in update_todo_request.model_dump(exclude_unset=True).items() }
     for key, value in update_fields.items():
         setattr(todo, key, value)
-    
+
     db.add(todo)
     db.commit()
