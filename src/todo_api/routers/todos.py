@@ -87,3 +87,22 @@ async def update_todo(
 
     db.add(todo)
     db.commit()
+
+@router.delete("/{todo_id}", status_code=status.HTTP_200_OK)
+async def delete_todo(
+    decoded_token: decoded_access_token,
+    db: db_session,
+    todo_id: int = Path(gt=0)
+):
+    await raise_if_no_valid_token(decoded_token)
+    todo = (
+        db.query(Todos)
+        .filter(Todos.id == todo_id, Todos.user_id == decoded_token.get("id"))
+        .first()
+    )
+    if todo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found."
+        )
+    db.query(Todos).filter(Todos.id == todo_id, Todos.user_id == decoded_token.get("id")).delete()
+    db.commit()
