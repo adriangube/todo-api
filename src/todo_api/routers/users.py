@@ -54,7 +54,7 @@ def getUserSelectableFields():
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=UserResponse)
 async def get_users(decoded_token: decoded_access_token, db: db_session):
-    raise_if_no_valid_token(decoded_token)
+    await raise_if_no_valid_token(decoded_token)
     fields = getUserSelectableFields()
     return (
         db.query(Users)
@@ -82,7 +82,7 @@ async def change_password(
     db: db_session,
     user_verification: UserVerification
 ):
-    raise_if_no_valid_token(decoded_token)
+    await raise_if_no_valid_token(decoded_token)
     user_model = db.query(Users).filter(Users.id == decoded_token.get('id')).first()
     if not verify_password(user_verification.password, user_model.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='The password provided doesn´t match the current password.')

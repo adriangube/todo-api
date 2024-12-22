@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, DeclarativeBase
-
-engine = create_engine("sqlite:///./todos.db")
+from .settings import settings
+engine = create_engine(settings.database_url)
 
 
 class Base(DeclarativeBase):
