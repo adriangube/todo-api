@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import text
 
-from ...models import Users
-from ..config import TestDatabaseSession, engine
+from ..models import Users
+from .db_config import TestDatabaseSession, engine
 
 @pytest.fixture
 def test_users():
