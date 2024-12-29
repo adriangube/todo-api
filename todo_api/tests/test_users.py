@@ -10,3 +10,8 @@ app.dependency_overrides[decode_access_token] = override_decode_access_token
 def test_return_user(test_users):  # noqa: F811
     response = client.get("/user")
     assert response.status_code == status.HTTP_200_OK
+    jsonResponse = response.json()
+    assert jsonResponse.get('id') == 1
+    assert jsonResponse.get("username") == test_users.username
+    assert jsonResponse.get("email") == test_users.email
+    assert jsonResponse.get('role')  == test_users.role

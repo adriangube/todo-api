@@ -7,6 +7,7 @@ from ..config import TestDatabaseSession, engine
 @pytest.fixture
 def test_users():
   user = Users(
+    id=1,
     username='testUser',
     email='test@email.com',
     hashed_password='123456',
