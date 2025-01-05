@@ -2,14 +2,15 @@ import pytest
 
 from ..models import Users
 from .db_config import TestDatabaseSession, engine
+from ..routers.auth import pwd_context
 
 @pytest.fixture
-def test_current_users():
+def test_user():
   user = Users(
     id=1,
     username='testUser',
     email='test@email.com',
-    hashed_password='123456',
+    hashed_password=pwd_context.hash('password123456'),
     is_active=True,
     role = 'admin'
   )
