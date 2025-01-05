@@ -1,11 +1,10 @@
 import pytest
-from sqlalchemy import text
 
 from ..models import Users
 from .db_config import TestDatabaseSession, engine
 
 @pytest.fixture
-def test_users():
+def test_current_users():
   user = Users(
     id=1,
     username='testUser',
@@ -18,6 +17,14 @@ def test_users():
   db.add(user)
   db.commit()
   yield user
-  with engine.connect() as connection:
-    connection.execute(text('DELETE FROM users;'))
-    connection.commit()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def clean_db():
+    connection = engine.connect()
+    transaction = connection.begin()
+    TestDatabaseSession.bind = connection
+
+    yield
+    transaction.rollback()
+    connection.close()
